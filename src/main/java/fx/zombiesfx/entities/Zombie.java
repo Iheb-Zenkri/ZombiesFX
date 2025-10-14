@@ -3,32 +3,34 @@ package fx.zombiesfx.entities;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Zombie extends Entity {
-    private final double speed;
-    private int health = 50;
+public abstract class Zombie extends Entity {
+    protected double speed;
+    protected double damage;
+    protected boolean attacking = false;
 
-    public Zombie(double x, double y, double speed) {
+    public Zombie(double x, double y, double health, double speed, double damage) {
         this.x = x;
         this.y = y;
+        this.health = this.maxHealth = health;
         this.speed = speed;
-    }
-
-    @Override
-    public void update(double delta) {
-        x -= speed * delta;
-        if (x < 0) alive = false;
+        this.damage = damage;
     }
 
     @Override
     public void render(GraphicsContext gc) {
         gc.setFill(Color.DARKRED);
-        gc.fillRect(x, y, 30, 30);
+        gc.fillRect(x, y, 40, 40);
         gc.setFill(Color.WHITE);
-        gc.fillText(String.valueOf(health), x + 5, y - 5);
+        gc.fillText(String.valueOf((int) health), x, y - 5);
     }
 
-    public void damage(int amount) {
-        health -= amount;
-        if (health <= 0) alive = false;
+    public void attack(Plant p, double delta) {
+        attacking = true;
+        p.takeDamage(damage * delta);
+    }
+
+    public void move(double delta) {
+        x -= speed * delta;
     }
 }
+

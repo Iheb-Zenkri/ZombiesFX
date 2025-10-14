@@ -1,24 +1,21 @@
 package fx.zombiesfx.patterns.factory;
 
-import fx.zombiesfx.entities.Plant;
-import fx.zombiesfx.entities.Zombie;
+import fx.zombiesfx.entities.*;
 
 public class EntityFactory {
     public static Plant createPlant(String type, double x, double y) {
-        switch (type) {
-            case "pea":
-                return new Plant(x, y, "Peashooter");
-            default:
-                return new Plant(x, y, "Basic");
-        }
+        return switch (type) {
+            case "sun" -> new Sunflower(x, y);
+            case "wall" -> new WallNut(x, y);
+            default -> new PeaShooter(x, y);
+        };
     }
 
     public static Zombie createZombie(String type, double x, double y) {
-        switch (type) {
-            case "fast":
-                return new Zombie(x, y, 60);
-            default:
-                return new Zombie(x, y, 40);
-        }
+        return switch (type) {
+            case "fast" -> new FastZombie(x, y);
+            case "tank" -> new TankZombie(x, y);
+            default -> new NormalZombie(x, y);
+        };
     }
 }

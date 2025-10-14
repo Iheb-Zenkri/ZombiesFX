@@ -5,6 +5,6 @@ import fx.zombiesfx.entities.Zombie;
 public class MultiShotStrategy implements AttackStrategy {
     @Override
     public void attack(Zombie target) {
-        target.damage(5);
+        target.takeDamage(5);
     }
 }

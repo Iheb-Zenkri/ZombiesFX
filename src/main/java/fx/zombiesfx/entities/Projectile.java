@@ -5,9 +5,8 @@ import javafx.scene.paint.Color;
 
 public class Projectile extends Entity {
     private final double speed = 200;
-    private final int damage;
 
-    public Projectile(double x, double y, int damage) {
+    public Projectile(double x, double y, double damage) {
         this.x = x;
         this.y = y;
         this.damage = damage;
@@ -23,9 +22,5 @@ public class Projectile extends Entity {
     public void render(GraphicsContext gc) {
         gc.setFill(Color.LIME);
         gc.fillOval(x, y, 8, 8);
-    }
-
-    public int getDamage() {
-        return damage;
     }
 }
