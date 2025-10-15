@@ -8,7 +8,7 @@ public class Sunflower extends Plant {
     private double timeSinceLastSun = 0;
 
     public Sunflower(double x, double y) {
-        super(x, y, 80);
+        super(x, y, 40, 40, 60);
     }
 
     @Override
@@ -20,7 +20,7 @@ public class Sunflower extends Plant {
     @Override
     public void render(GraphicsContext gc) {
         gc.setFill(Color.YELLOW);
-        gc.fillOval(x, y, 40, 40);
+        gc.fillOval(x, y, width, height);
         renderHealth(gc);
     }
 

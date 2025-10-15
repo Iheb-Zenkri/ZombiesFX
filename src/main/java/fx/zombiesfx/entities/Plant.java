@@ -7,9 +7,11 @@ public abstract class Plant extends Entity {
     protected double cooldown = 1.5;
     protected double timeSinceLastAction = 0;
 
-    public Plant(double x, double y, double health) {
+    public Plant(double x, double y, double width, double height, double health) {
         this.x = x;
         this.y = y;
+        this.width = width;
+        this.height = height;
         this.health = this.maxHealth = health;
     }
 
@@ -28,8 +30,8 @@ public abstract class Plant extends Entity {
 
     public void renderHealth(GraphicsContext gc) {
         gc.setFill(Color.RED);
-        gc.fillRect(x, y - 10, 30, 5);
-        gc.setFill(Color.LIME);
-        gc.fillRect(x, y - 10, 30 * (health / maxHealth), 5);
+        gc.fillRect(x, y - 10, width, 5);
+        gc.setFill(Color.GREEN);
+        gc.fillRect(x, y - 10, width * (health / maxHealth), 5);
     }
 }

@@ -28,8 +28,8 @@ public class PlayState extends GameState {
     private double spawnTimer = 0;
     private GraphicsContext gc;
 
-    private int sunPoints = 100; // start with some suns
-    private String selectedPlantType = "pea"; // default
+    private int sunPoints = 1000; // start with some suns
+    private String selectedPlantType = "pea";
 
     public PlayState(App app, Stage stage) {
         super(app, stage);
@@ -101,7 +101,7 @@ public class PlayState extends GameState {
             double y = GameGrid.getCellY(row);
             String[] types = {"normal", "fast", "tank"};
             String type = types[random.nextInt(types.length)];
-            zombies.add(EntityFactory.createZombie(type, 1000, y));
+            zombies.add(EntityFactory.createZombie(type, 1080, y));
         }
 
         // Update plants
@@ -123,6 +123,16 @@ public class PlayState extends GameState {
                     if (proj != null) projectiles.add(proj);
                 }
             }
+
+            // SnowPeat: shoot
+            if (plant instanceof SnowPeat snowPeat) {
+                boolean zombieInLane = zombies.stream()
+                        .anyMatch(z -> Math.abs(z.getY() - plant.getY()) < 30 && z.getX() > plant.getX());
+                if (zombieInLane && snowPeat.canAct()) {
+                    IceProjectile iceProjectile = snowPeat.shoot();
+                    if (iceProjectile != null) projectiles.add(iceProjectile);
+                }
+            }
         }
 
         // Update projectiles
@@ -134,6 +144,9 @@ public class PlayState extends GameState {
             for (Zombie z : zombies) {
                 if (Math.abs(p.getX() - z.getX()) < 20 && Math.abs(p.getY() - z.getY()) < 20) {
                     z.takeDamage(p.getDamage());
+                    if (p instanceof IceProjectile) {
+                        z.applySlow();
+                    }
                     itProj.remove();
                     break;
                 }
@@ -145,6 +158,7 @@ public class PlayState extends GameState {
         Iterator<Zombie> itZ = zombies.iterator();
         while (itZ.hasNext()) {
             Zombie z = itZ.next();
+            z.update(delta);
             boolean attacking = false;
 
             for (Iterator<Plant> itP = plants.iterator(); itP.hasNext(); ) {
@@ -174,7 +188,7 @@ public class PlayState extends GameState {
         gc.fillRect(0, 0, 1080, 720);
 
         // Draw grid
-        gc.setStroke(Color.DARKGREEN);
+        gc.setStroke(Color.LIGHTYELLOW);
         for (int r = 0; r < GameGrid.ROWS; r++) {
             for (int c = 0; c < GameGrid.COLS; c++) {
                 gc.strokeRect(c * GameGrid.CELL_WIDTH, r * GameGrid.CELL_HEIGHT,
@@ -200,4 +214,7 @@ public class PlayState extends GameState {
             default -> 50;
         };
     }
+
+
 }
+

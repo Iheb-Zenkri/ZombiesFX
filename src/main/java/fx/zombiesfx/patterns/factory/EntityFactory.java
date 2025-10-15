@@ -6,7 +6,7 @@ public class EntityFactory {
     public static Plant createPlant(String type, double x, double y) {
         return switch (type) {
             case "sun" -> new Sunflower(x, y);
-            case "wall" -> new WallNut(x, y);
+            case "wall" -> new SnowPeat(x, y);
             default -> new PeaShooter(x, y);
         };
     }

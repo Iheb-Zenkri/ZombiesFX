@@ -9,6 +9,8 @@ public class Projectile extends Entity {
     public Projectile(double x, double y, double damage) {
         this.x = x;
         this.y = y;
+        this.width = 8;
+        this.height = 8;
         this.damage = damage;
     }
 
@@ -21,6 +23,6 @@ public class Projectile extends Entity {
     @Override
     public void render(GraphicsContext gc) {
         gc.setFill(Color.LIME);
-        gc.fillOval(x, y, 8, 8);
+        gc.fillOval(x, y, width, height);
     }
 }
