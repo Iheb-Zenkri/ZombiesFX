@@ -1,6 +1,7 @@
 package fx.zombiesfx.game;
 
 import fx.zombiesfx.App;
+import fx.zombiesfx.assets.Assets;
 import fx.zombiesfx.entities.*;
 import fx.zombiesfx.patterns.factory.EntityFactory;
 import javafx.animation.AnimationTimer;
@@ -22,6 +23,7 @@ public class PlayState extends GameState {
     private final List<Plant> plants = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
     private final List<Zombie> zombies = new ArrayList<>();
+    private final List<Sun> suns = new ArrayList<>();
 
     private AnimationTimer timer;
     private final Random random = new Random();
@@ -37,16 +39,18 @@ public class PlayState extends GameState {
 
     @Override
     public void start() {
-        Canvas canvas = new Canvas(1080, 720);
+        Canvas canvas = new Canvas(app.getScreenWidth(), app.getScreenHeight());
         gc = canvas.getGraphicsContext2D();
 
         canvas.setOnMouseClicked(this::handleClick);
+
+        Assets.preloadAll();
 
         Scene scene = new Scene(new StackPane(canvas));
         scene.setOnKeyPressed(this::handleKey);
 
         stage.setScene(scene);
-        stage.setTitle("Zombie Defense - Play!");
+        stage.setTitle("Plant vs Zombie - Play!");
         stage.show();
 
         timer = new AnimationTimer() {
@@ -72,13 +76,15 @@ public class PlayState extends GameState {
 
         // Prevent planting over another plant
         for (Plant p : plants) {
-            if (Math.abs(p.getX() - px) < 10 && Math.abs(p.getY() - py) < 10) return;
+            if (Math.abs(p.getX() - px) < p.getWidth() && Math.abs(p.getY() - py) < p.getHeight()) return;
         }
 
         int cost = getPlantCost(selectedPlantType);
         if (sunPoints < cost) return; // not enough sun
 
         Plant newPlant = EntityFactory.createPlant(selectedPlantType, px, py);
+        newPlant.setX(px + (GameGrid.CELL_WIDTH - newPlant.getWidth()) / 2);
+        newPlant.setY(py + (GameGrid.CELL_HEIGHT - newPlant.getHeight()) / 2);
         plants.add(newPlant);
         sunPoints -= cost;
     }
@@ -101,7 +107,11 @@ public class PlayState extends GameState {
             double y = GameGrid.getCellY(row);
             String[] types = {"normal", "fast", "tank"};
             String type = types[random.nextInt(types.length)];
-            zombies.add(EntityFactory.createZombie(type, 1080, y));
+
+            Zombie newZombie = EntityFactory.createZombie("tank", app.getScreenWidth(), y);
+            newZombie.setX(app.getScreenWidth() - newZombie.getWidth() * 0.2);
+            newZombie.setY(y + (GameGrid.CELL_HEIGHT - newZombie.getHeight()) / 2);
+            zombies.add(newZombie);
         }
 
         // Update plants
@@ -111,26 +121,43 @@ public class PlayState extends GameState {
             // Sunflower: produce suns
             if (plant instanceof Sunflower sun && sun.canProduceSun()) {
                 sunPoints += 25;
+                sun.tryProduceSun(suns);
                 sun.resetSunTimer();
             }
+
+            // Suns: fade effects
+            for (Sun s : suns) {
+                s.update(delta);
+            }
+            suns.removeIf(Sun::shouldBeRemoved);
 
             // PeaShooter: shoot
             if (plant instanceof PeaShooter shooter) {
                 boolean zombieInLane = zombies.stream()
-                        .anyMatch(z -> Math.abs(z.getY() - plant.getY()) < 30 && z.getX() > plant.getX());
+                        .anyMatch(z ->
+                                Math.abs(z.getY() - plant.getY()) < Math.max(z.getHeight(), plant.getHeight())
+                                        && z.getX() > plant.getX());
                 if (zombieInLane && shooter.canAct()) {
                     Projectile proj = shooter.shoot();
                     if (proj != null) projectiles.add(proj);
+                }
+                if (!zombieInLane) {
+                    plant.animationOff();
                 }
             }
 
             // SnowPeat: shoot
             if (plant instanceof SnowPeat snowPeat) {
                 boolean zombieInLane = zombies.stream()
-                        .anyMatch(z -> Math.abs(z.getY() - plant.getY()) < 30 && z.getX() > plant.getX());
+                        .anyMatch(
+                                z -> Math.abs(z.getY() - plant.getY()) < Math.max(z.getHeight(), plant.getHeight())
+                                        && z.getX() > plant.getX());
                 if (zombieInLane && snowPeat.canAct()) {
                     IceProjectile iceProjectile = snowPeat.shoot();
                     if (iceProjectile != null) projectiles.add(iceProjectile);
+                }
+                if (!zombieInLane) {
+                    plant.animationOff();
                 }
             }
         }
@@ -142,7 +169,9 @@ public class PlayState extends GameState {
             p.update(delta);
 
             for (Zombie z : zombies) {
-                if (Math.abs(p.getX() - z.getX()) < 20 && Math.abs(p.getY() - z.getY()) < 20) {
+                if (Math.abs(p.getX() - z.getX()) < 20
+                        && Math.abs(p.getY() - z.getY()) < z.getHeight()
+                ) {
                     z.takeDamage(p.getDamage());
                     if (p instanceof IceProjectile) {
                         z.applySlow();
@@ -151,7 +180,7 @@ public class PlayState extends GameState {
                     break;
                 }
             }
-            if (p.getX() > 1080) itProj.remove();
+            if (p.getX() > app.getScreenWidth()) itProj.remove();
         }
 
         // Update zombies
@@ -163,15 +192,20 @@ public class PlayState extends GameState {
 
             for (Iterator<Plant> itP = plants.iterator(); itP.hasNext(); ) {
                 Plant p = itP.next();
-                if (Math.abs(z.getY() - p.getY()) < 20 && z.getX() < p.getX() + 40 && z.getX() > p.getX()) {
+                if (
+                        Math.abs(z.getY() - p.getY()) < Math.max(z.getHeight(), p.getHeight())
+                                && z.getX() < p.getX() + z.getWidth() * 0.5
+                                && z.getX() > p.getX()
+                ) {
                     z.attack(p, delta);
                     attacking = true;
                     if (!p.isAlive()) itP.remove();
                     break;
                 }
             }
-
-            if (!attacking) z.move(delta);
+            if (!attacking) {
+                z.move(delta);
+            }
 
             if (!z.isAlive()) itZ.remove();
 
@@ -185,13 +219,13 @@ public class PlayState extends GameState {
 
     private void render(GraphicsContext gc) {
         gc.setFill(Color.LIGHTGREEN);
-        gc.fillRect(0, 0, 1080, 720);
+        gc.fillRect(0, 0, app.getScreenWidth(), app.getScreenHeight());
 
         // Draw grid
         gc.setStroke(Color.LIGHTYELLOW);
         for (int r = 0; r < GameGrid.ROWS; r++) {
             for (int c = 0; c < GameGrid.COLS; c++) {
-                gc.strokeRect(c * GameGrid.CELL_WIDTH, r * GameGrid.CELL_HEIGHT,
+                gc.strokeRect(c * GameGrid.CELL_WIDTH, r * GameGrid.CELL_HEIGHT + 50,
                         GameGrid.CELL_WIDTH, GameGrid.CELL_HEIGHT);
             }
         }
@@ -200,11 +234,12 @@ public class PlayState extends GameState {
         plants.forEach(p -> p.render(gc));
         projectiles.forEach(p -> p.render(gc));
         zombies.forEach(z -> z.render(gc));
+        suns.forEach(s -> s.render(gc));
 
         // HUD
         gc.setFill(Color.BLACK);
         gc.fillText("☀ Sun: " + sunPoints, 20, 20);
-        gc.fillText("Selected: " + selectedPlantType + " (1-3)", 20, 40);
+        gc.fillText("Selected: " + selectedPlantType + " (1-3)", 120, 20);
     }
 
     private int getPlantCost(String type) {

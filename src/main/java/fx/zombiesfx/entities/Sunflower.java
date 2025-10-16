@@ -1,14 +1,17 @@
 package fx.zombiesfx.entities;
 
+import fx.zombiesfx.assets.Assets;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
+
+import java.util.List;
 
 public class Sunflower extends Plant {
-    private final double sunCooldown = 5.0; // produce every 5s
+    private final double sunCooldown = 15.0; // produce every 5s
     private double timeSinceLastSun = 0;
 
     public Sunflower(double x, double y) {
-        super(x, y, 40, 40, 60);
+        super(x, y, 60);
+        plantGif = Assets.get("/fx/zombiesfx/assets/sunflower.gif");
     }
 
     @Override
@@ -19,8 +22,7 @@ public class Sunflower extends Plant {
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setFill(Color.YELLOW);
-        gc.fillOval(x, y, width, height);
+        gc.drawImage(plantGif, x, y, width, height);
         renderHealth(gc);
     }
 
@@ -30,5 +32,12 @@ public class Sunflower extends Plant {
 
     public void resetSunTimer() {
         timeSinceLastSun = 0;
+    }
+
+    public void tryProduceSun(List<Sun> suns) {
+        if (canProduceSun()) {
+            suns.add(new Sun(x + width / 2 - 30, y, x - 50, y + height)); // appear above the flower
+            resetSunTimer();
+        }
     }
 }

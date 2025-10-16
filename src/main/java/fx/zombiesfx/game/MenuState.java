@@ -18,7 +18,7 @@ public class MenuState extends GameState {
 
         VBox root = new VBox(20, play);
         root.setStyle("-fx-alignment: center; -fx-padding: 50;");
-        stage.setScene(new Scene(root, 600, 400));
+        stage.setScene(new Scene(root, app.getScreenWidth(), app.getScreenHeight()));
         stage.setTitle("Zombie Defense!");
         stage.show();
     }

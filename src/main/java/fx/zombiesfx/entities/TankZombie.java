@@ -1,11 +1,13 @@
 package fx.zombiesfx.entities;
 
+import fx.zombiesfx.assets.Assets;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 public class TankZombie extends Zombie {
     public TankZombie(double x, double y) {
         super(x, y, 200, 15, 20);
+        this.setWidth(180);
+        zombieGif = Assets.get("/fx/zombiesfx/assets/tank-zombie-walking.gif");
     }
 
     @Override
@@ -15,10 +17,20 @@ public class TankZombie extends Zombie {
 
     @Override
     public void render(GraphicsContext gc) {
-        super.render(gc);
-        gc.setFill(Color.FIREBRICK);
-        gc.fillRect(x, y, width, height);
+        gc.drawImage(zombieGif, x, y, width, height);
         renderHealth(gc);
-        gc.restore();
+    }
+
+
+    @Override
+    public void attackingOn() {
+        attacking = true;
+        zombieGif = Assets.get("/fx/zombiesfx/assets/tank-zombie-attacking.gif");
+    }
+
+    @Override
+    public void attackingOff() {
+        attacking = false;
+        zombieGif = Assets.get("/fx/zombiesfx/assets/tank-zombie-walking.gif");
     }
 }

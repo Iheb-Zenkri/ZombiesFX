@@ -79,4 +79,5 @@ public abstract class Entity {
     public void setDamage(double damage) {
         this.damage = damage;
     }
+
 }

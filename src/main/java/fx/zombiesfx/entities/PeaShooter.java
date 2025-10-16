@@ -1,27 +1,40 @@
 package fx.zombiesfx.entities;
 
+import fx.zombiesfx.assets.Assets;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 public class PeaShooter extends Plant {
     public PeaShooter(double x, double y) {
-        super(x, y, 30, 30, 100);
+        super(x, y, 100);
+        animationOn();
         this.damage = 20;
-        this.cooldown = 1.2;
+        this.cooldown = 2.8;
     }
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setFill(Color.GREEN);
-        gc.fillOval(x, y, 40, 40);
+        gc.drawImage(plantGif, x, y, width, height);
         renderHealth(gc);
     }
 
     public Projectile shoot() {
         if (canAct()) {
             resetCooldown();
-            return new Projectile(x + 40, y + 15, damage);
+            if (!isAnimationOn()) animationOn();
+            return new Projectile(x + width, y + (height * 0.2), damage);
         }
         return null;
     }
+
+
+    @Override
+    public void animationOn() {
+        plantGif = Assets.get("/fx/zombiesfx/assets/pea-shooter-shooting.gif");
+    }
+
+    @Override
+    public void animationOff() {
+        plantGif = Assets.get("/fx/zombiesfx/assets/pea-shooter.gif");
+    }
+
 }

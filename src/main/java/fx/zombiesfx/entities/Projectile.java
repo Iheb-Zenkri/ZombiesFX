@@ -1,28 +1,33 @@
 package fx.zombiesfx.entities;
 
+import fx.zombiesfx.assets.Assets;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
 
 public class Projectile extends Entity {
+    protected Image projectImage;
     private final double speed = 200;
 
     public Projectile(double x, double y, double damage) {
         this.x = x;
         this.y = y;
-        this.width = 8;
-        this.height = 8;
+        this.width = 24;
+        this.height = 24;
         this.damage = damage;
+        setProjectImage();
     }
 
     @Override
     public void update(double delta) {
         x += speed * delta;
-        if (x > 600) alive = false;
     }
 
     @Override
     public void render(GraphicsContext gc) {
-        gc.setFill(Color.LIME);
-        gc.fillOval(x, y, width, height);
+        gc.drawImage(projectImage, x, y, width, height);
+    }
+
+    public void setProjectImage() {
+        projectImage = Assets.get("/fx/zombiesfx/assets/projectile.jpg");
     }
 }
