@@ -25,6 +25,13 @@ public class Assets {
     }
 
     public static void preloadAll() {
+        // grass's Image
+        get("/fx/zombiesfx/assets/grass-dark.png");
+        get("/fx/zombiesfx/assets/grass-light.png");
+
+        // street's Image
+        get("/fx/zombiesfx/assets/street.png");
+
         // sunflower's gifs
         get("/fx/zombiesfx/assets/sunflower.gif");
         get("/fx/zombiesfx/assets/sun.jpg");

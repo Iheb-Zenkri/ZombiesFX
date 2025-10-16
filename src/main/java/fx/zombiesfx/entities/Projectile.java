@@ -6,7 +6,7 @@ import javafx.scene.image.Image;
 
 public class Projectile extends Entity {
     protected Image projectImage;
-    private final double speed = 200;
+    private final double speed = 300;
 
     public Projectile(double x, double y, double damage) {
         this.x = x;

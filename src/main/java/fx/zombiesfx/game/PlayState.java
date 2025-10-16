@@ -30,7 +30,7 @@ public class PlayState extends GameState {
     private double spawnTimer = 0;
     private GraphicsContext gc;
 
-    private int sunPoints = 1000; // start with some suns
+    private int sunPoints = 100;
     private String selectedPlantType = "pea";
 
     public PlayState(App app, Stage stage) {
@@ -74,13 +74,25 @@ public class PlayState extends GameState {
         double px = GameGrid.getCellX(col);
         double py = GameGrid.getCellY(row);
 
+        // clicking outside the grid
+        if (col < 0 || row < 0 || col > 5) return;
+
+        //Sun onClick collecting
+        for (Sun s : suns) {
+            s.onClick(e);
+            if (s.isCollected()) {
+                sunPoints += s.getBonus();
+                return;
+            }
+        }
+
         // Prevent planting over another plant
         for (Plant p : plants) {
             if (Math.abs(p.getX() - px) < p.getWidth() && Math.abs(p.getY() - py) < p.getHeight()) return;
         }
 
         int cost = getPlantCost(selectedPlantType);
-        if (sunPoints < cost) return; // not enough sun
+        if (sunPoints < cost) return;
 
         Plant newPlant = EntityFactory.createPlant(selectedPlantType, px, py);
         newPlant.setX(px + (GameGrid.CELL_WIDTH - newPlant.getWidth()) / 2);
@@ -108,7 +120,7 @@ public class PlayState extends GameState {
             String[] types = {"normal", "fast", "tank"};
             String type = types[random.nextInt(types.length)];
 
-            Zombie newZombie = EntityFactory.createZombie("tank", app.getScreenWidth(), y);
+            Zombie newZombie = EntityFactory.createZombie(type, app.getScreenWidth(), y);
             newZombie.setX(app.getScreenWidth() - newZombie.getWidth() * 0.2);
             newZombie.setY(y + (GameGrid.CELL_HEIGHT - newZombie.getHeight()) / 2);
             zombies.add(newZombie);
@@ -120,7 +132,6 @@ public class PlayState extends GameState {
 
             // Sunflower: produce suns
             if (plant instanceof Sunflower sun && sun.canProduceSun()) {
-                sunPoints += 25;
                 sun.tryProduceSun(suns);
                 sun.resetSunTimer();
             }
@@ -225,8 +236,21 @@ public class PlayState extends GameState {
         gc.setStroke(Color.LIGHTYELLOW);
         for (int r = 0; r < GameGrid.ROWS; r++) {
             for (int c = 0; c < GameGrid.COLS; c++) {
-                gc.strokeRect(c * GameGrid.CELL_WIDTH, r * GameGrid.CELL_HEIGHT + 50,
-                        GameGrid.CELL_WIDTH, GameGrid.CELL_HEIGHT);
+                if (c < GameGrid.COLS - 2) {
+                    if ((r + c) % 2 == 0) {
+                        gc.drawImage(GameGrid.grassLightImage, c * GameGrid.CELL_WIDTH + GameGrid.gridSpacingX,
+                                r * GameGrid.CELL_HEIGHT + GameGrid.gridSpacingY,
+                                GameGrid.CELL_WIDTH, GameGrid.CELL_HEIGHT);
+                    } else {
+                        gc.drawImage(GameGrid.grassDarkImage, c * GameGrid.CELL_WIDTH + GameGrid.gridSpacingX,
+                                r * GameGrid.CELL_HEIGHT + GameGrid.gridSpacingY,
+                                GameGrid.CELL_WIDTH, GameGrid.CELL_HEIGHT);
+                    }
+                } else {
+                    gc.drawImage(GameGrid.streetImage, c * GameGrid.CELL_WIDTH + GameGrid.gridSpacingX,
+                            r * GameGrid.CELL_HEIGHT + GameGrid.gridSpacingY,
+                            GameGrid.CELL_WIDTH, GameGrid.CELL_HEIGHT);
+                }
             }
         }
 

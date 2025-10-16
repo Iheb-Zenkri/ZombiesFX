@@ -8,13 +8,14 @@ import javafx.scene.input.MouseEvent;
 public class Sun extends Entity {
     private final Image sunImage;
 
+    private final int bonus;
     // Motion
     private final double startX;
     private final double startY;
     private final double endX;
     private final double endY;
-    private final double duration = 3;    // seconds for the full arc
-    private double t = 0;             // time (0 to 1)
+    private final double duration = 3;
+    private double t = 0;
     private boolean collected = false;
     private boolean clickable = true;
     private double alpha = 1.0;
@@ -28,6 +29,7 @@ public class Sun extends Entity {
         this.endY = endY;
         this.width = 60;
         this.height = 60;
+        this.bonus = 25;
         this.sunImage = Assets.get("/fx/zombiesfx/assets/sun.jpg");
     }
 
@@ -69,11 +71,15 @@ public class Sun extends Entity {
                 e.getY() >= y && e.getY() <= y + height) {
             collected = true;
             clickable = false;
-            // TODO: add +25 sun points to player or play sound
+            // TODO: play sound
         }
     }
 
     public boolean shouldBeRemoved() {
         return collected && alpha <= 0;
+    }
+
+    public int getBonus() {
+        return bonus;
     }
 }
